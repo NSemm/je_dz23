@@ -1,0 +1,222 @@
+CREATE DATABASE book_sales01;
+
+CREATE TABLE country (
+name VARCHAR(60),
+iso CHAR(2) PRIMARY KEY
+);
+INSERT INTO country (name, iso)
+VALUES
+('Ukraine', 'UA'),
+('Switzerland', 'CH'),
+('France', 'FR'),
+('United States Of America', 'US'),
+('Germany', 'DE'),
+('India', 'IN'),
+('United Kingdom of Great Britain and Northern Ireland', 'GB');
+
+CREATE TABLE city (
+city_id SERIAL PRIMARY KEY,
+name VARCHAR(50),
+country CHAR(2),
+CONSTRAINT city_country_iso_fk FOREIGN KEY (country) REFERENCES country (iso),
+CONSTRAINT city_name_uniq UNIQUE (name)
+);
+INSERT INTO city (name, country)
+VALUES
+('Dnipro', 'UA'),
+('Kiev', 'UA'),
+('Odessa', 'UA'),
+('Lviv', 'UA'),
+('Berlin', 'DE'),
+('Mumbai', 'IN'),
+('Paris', 'FR'),
+('Devil', 'FR'),
+('New York', 'US');
+
+CREATE TABLE authors (
+author_id SERIAL PRIMARY KEY,
+name varchar(40),
+surname varchar(40),
+city int,
+CONSTRAINT authors_city_city_id_fk FOREIGN KEY (city) REFERENCES city (city_id),
+CONSTRAINT authors_surname_uniq UNIQUE (name, surname)
+);
+INSERT INTO authors (name , surname, city)
+VALUES
+('Taras','Shevshenko', (SELECT city_id FROM city WHERE name = 'Lviv')),
+('Ivan','Franko', (SELECT city_id FROM city WHERE name = 'Kiev')),
+('Lesya','Stepovischka', (SELECT city_id FROM city WHERE name = 'Dnipro')),
+('Mikhaylo','Kotsubinckiy', (SELECT city_id FROM city WHERE name = 'Lviv')),
+('Mikola','Hviloviy', (SELECT city_id FROM city WHERE name = 'Lviv')),
+('Patric','Dzuskin', (SELECT city_id FROM city WHERE name = 'Berlin')),
+('Gunter','Grass', (SELECT city_id FROM city WHERE name = 'Berlin')),
+('Georg','Durui', (SELECT city_id FROM city WHERE name = 'Paris')),
+('Anri','Bosho', (SELECT city_id FROM city WHERE name = 'Devil')),
+('Mahmud','Gavan', (SELECT city_id FROM city WHERE name = 'Mumbai'));
+
+CREATE TABLE ganres (
+ganres_id SERIAL PRIMARY KEY,
+name varchar(30),
+CONSTRAINT ganres_name_uniq UNIQUE (name)
+);
+INSERT INTO ganres (name)
+VALUES
+('story'),
+('novel'),
+('sketch'),
+('play');
+
+CREATE TABLE shops (
+shop_id SERIAL PRIMARY KEY,
+name varchar (40) ,
+city int,
+CONSTRAINT shops_city_city_id_fk FOREIGN KEY (city) REFERENCES city (city_id),
+CONSTRAINT shops_name_city_uniq UNIQUE (name, city)
+);
+INSERT INTO shops (name, city)
+VALUES
+('Books', (SELECT city_id FROM city WHERE name = 'Dnipro')),
+('Books world', (SELECT city_id FROM city WHERE name = 'Dnipro')),
+('Readers', (SELECT city_id FROM city WHERE name = 'Kiev')),
+('Books fair', (SELECT city_id FROM city WHERE name = 'Lviv')),
+('Books fest', (SELECT city_id FROM city WHERE name = 'Berlin')),
+('Indian books', (SELECT city_id FROM city WHERE name = 'Mumbai')),
+('Any books', (SELECT city_id FROM city WHERE name = 'Paris'));
+
+CREATE TABLE books (
+book_id SERIAL PRIMARY KEY,
+name varchar(70),
+ganre int,
+author int,
+price numeric (8,2),
+circulation int,
+public_date date,
+pages int,
+CONSTRAINT books_name_author_uniq UNIQUE(name, author),
+CONSTRAINT books_ganres_ganres_id_fk FOREIGN KEY (ganre) REFERENCES ganres (ganres_id),
+CONSTRAINT books_authors_surname_fk FOREIGN KEY (author) REFERENCES authors (author_id)
+);
+INSERT INTO books (name, ganre, author, price, circulation, public_date, pages)
+VALUES
+('Katerina', (SELECT ganres_id FROM ganres WHERE name = 'novel'), (SELECT author_id FROM authors WHERE surname = 'Shevshenko'), 200.00, 800, '01-02-1840', 250),
+('Topolya', (SELECT ganres_id FROM ganres WHERE name = 'novel'), (SELECT author_id FROM authors WHERE surname = 'Shevshenko'), 250.00, 860, '01-12-1840', 169),
+('Dumi moi', (SELECT ganres_id FROM ganres WHERE name = 'play'), (SELECT author_id FROM authors WHERE surname = 'Shevshenko'), 269.50, 150, '20-08-1841', 97),
+('Gaidamaki', (SELECT ganres_id FROM ganres WHERE name = 'novel'), (SELECT author_id FROM authors WHERE surname = 'Shevshenko'), 315.00, 560, '01-01-1841', 142),
+('Kavkaz', (SELECT ganres_id FROM ganres WHERE name = 'story'), (SELECT author_id FROM authors WHERE surname = 'Shevshenko'), 115.00, 320, '01-01-1859', 124),
+('Kobzar', (SELECT ganres_id FROM ganres WHERE name = 'novel'), (SELECT author_id FROM authors WHERE surname = 'Shevshenko'), 480.00, 10560, '01-01-1840', 450),
+('Lisova idiliya', (SELECT ganres_id FROM ganres WHERE name = 'novel'), (SELECT author_id FROM authors WHERE surname = 'Franko'), 321.90, 600, '20-08-1903', 154),
+('Galitski obrazki', (SELECT ganres_id FROM ganres WHERE name = 'sketch'), (SELECT author_id FROM authors WHERE surname = 'Franko'), 121.00, 420, '05-10-1885', 85),
+('Sim kazok', (SELECT ganres_id FROM ganres WHERE name = 'story'), (SELECT author_id FROM authors WHERE surname = 'Franko'), 150.00, 300, '05-10-1900', 178),
+('Zahar Berkut', (SELECT ganres_id FROM ganres WHERE name = 'novel'), (SELECT author_id FROM authors WHERE surname = 'Franko'), 640.00, 8600, '06-03-1883', 364),
+('Moisey', (SELECT ganres_id FROM ganres WHERE name = 'novel'), (SELECT author_id FROM authors WHERE surname = 'Franko'), 678.00, 5600, '01-03-1905', 280),
+('Farbovanniy lis', (SELECT ganres_id FROM ganres WHERE name = 'novel'), (SELECT author_id FROM authors WHERE surname = 'Franko'), 278.00, 600, '20-03-1898', 115),
+('Zivjale lysttja', (SELECT ganres_id FROM ganres WHERE name = 'novel'), (SELECT author_id FROM authors WHERE surname = 'Franko'), 290.00, 1200, '10-03-1896', 132),
+('Pe-coptor', (SELECT ganres_id FROM ganres WHERE name = 'play'), (SELECT author_id FROM authors WHERE surname = 'Kotsubinckiy'), 135.00, 125, '09-02-1896', 56),
+('Posol vid chornogo tsarya', (SELECT ganres_id FROM ganres WHERE name = 'novel'), (SELECT author_id FROM authors WHERE surname = 'Kotsubinckiy'), 164.00, 310, '09-02-1897', 160),
+('V putah shaitana', (SELECT ganres_id FROM ganres WHERE name = 'sketch'), (SELECT author_id FROM authors WHERE surname = 'Kotsubinckiy'), 169.00, 370, '25-02-1899', 270),
+('Tini zabutyh predkiv', (SELECT ganres_id FROM ganres WHERE name = 'novel'), (SELECT author_id FROM authors WHERE surname = 'Kotsubinckiy'), 461.00, 1370, '20-08-1912', 214),
+('Dorogoyu tsinoyu', (SELECT ganres_id FROM ganres WHERE name = 'novel'), (SELECT author_id FROM authors WHERE surname = 'Kotsubinckiy'), 401.00, 1110, '01-04-1902', 196),
+('Smih', (SELECT ganres_id FROM ganres WHERE name = 'novel'), (SELECT author_id FROM authors WHERE surname = 'Kotsubinckiy'), 320.00, 2500, '01-04-1906', 150),
+('Syni etyudy', (SELECT ganres_id FROM ganres WHERE name = 'story'), (SELECT author_id FROM authors WHERE surname = 'Hviloviy'), 109.00, 300, '25-02-2018', 210),
+('Kit u chobotah', (SELECT ganres_id FROM ganres WHERE name = 'play'), (SELECT author_id FROM authors WHERE surname = 'Hviloviy'), 209.00, 200, '25-10-2018', 110),
+('Der Kontrabass', (SELECT ganres_id FROM ganres WHERE name = 'novel'), (SELECT author_id FROM authors WHERE surname = 'Dzuskin'), 560.00, 200, '01-03-1980', 320),
+('The flounder', (SELECT ganres_id FROM ganres WHERE name = 'novel'), (SELECT author_id FROM authors WHERE surname = 'Dzuskin'), 490.00, 560, '03-05-1977', 241),
+('Dog Years', (SELECT ganres_id FROM ganres WHERE name = 'novel'), (SELECT author_id FROM authors WHERE surname = 'Dzuskin'), 580.00, 560, '20-01-1963', 310),
+('Crabwalk', (SELECT ganres_id FROM ganres WHERE name = 'story'), (SELECT author_id FROM authors WHERE surname = 'Dzuskin'), 440.00, 860, '20-01-2002', 223),
+('Oedipus on the road', (SELECT ganres_id FROM ganres WHERE name = 'novel'), (SELECT author_id FROM authors WHERE surname = 'Bosho'), 450.00, 450, '20-01-1990', 205),
+('Antigone', (SELECT ganres_id FROM ganres WHERE name = 'story'), (SELECT author_id FROM authors WHERE surname = 'Bosho'), 356.00, 320, '20-01-1997', 150),
+('La Dechirure', (SELECT ganres_id FROM ganres WHERE name = 'novel'), (SELECT author_id FROM authors WHERE surname = 'Bosho'), 125.00, 1500, '20-01-1966', 148),
+('Manazir an-insha iriad alinsha', (SELECT ganres_id FROM ganres WHERE name = 'play'), (SELECT author_id FROM authors WHERE surname = 'Gavan'), 350, 80, '20-01-1462', 52),
+('Der Zwang zur Tiefe', (SELECT ganres_id FROM ganres WHERE name = 'story'), (SELECT author_id FROM authors WHERE surname = 'Dzuskin'), 820.00, 200, '15-03-1995', 118),
+('Die Taube', (SELECT ganres_id FROM ganres WHERE name = 'play'), (SELECT author_id FROM authors WHERE surname = 'Dzuskin'), 165.00, 200, '20-05-1987', 32),
+('Amnesie in litteris', (SELECT ganres_id FROM ganres WHERE name = 'novel'), (SELECT author_id FROM authors WHERE surname = 'Dzuskin'), 520.00, 200, '01-03-1986', 55);
+
+CREATE TABLE sales (
+sale_id SERIAL PRIMARY KEY,
+shop int,
+book int,
+price numeric(8,2),
+sales_count int,
+ctime timestamp,
+CONSTRAINT sales_shops_name FOREIGN KEY (shop) REFERENCES shops(shop_id),
+CONSTRAINT sales_books_name FOREIGN KEY (book) REFERENCES books(book_id)
+);
+INSERT INTO sales (shop, book, price, sales_count, ctime)
+VALUES
+((SELECT shop_id FROM shops WHERE name = 'Books world'), (SELECT book_id FROM books WHERE name = 'Moisey'), 1560.00, 1, '2020-10-19 10:23:54+02'),
+((SELECT shop_id FROM shops WHERE name = 'Books'), (SELECT book_id FROM books WHERE name = 'Katerina'), 256.00, 1, '2020-11-01 10:23:54+02'),
+((SELECT shop_id FROM shops WHERE name = 'Readers'), (SELECT book_id FROM books WHERE name = 'Katerina'), 560.00, 2, '2020-12-01 10:23:54+02'),
+((SELECT shop_id FROM shops WHERE name = 'Books fest'), (SELECT book_id FROM books WHERE name = 'Farbovanniy lis'), 560.00, 10, '2020-12-01 10:23:54+02'),
+((SELECT shop_id FROM shops WHERE name = 'Books fest'), (SELECT book_id FROM books WHERE name = 'Syni etyudy'), 1560.00, 5, '2020-12-01 10:23:54+02'),
+((SELECT shop_id FROM shops WHERE name = 'Books fest'), (SELECT book_id FROM books WHERE name = 'Dog Years'), 1560.00, 2, '2020-12-01 10:23:54+02'),
+((SELECT shop_id FROM shops WHERE name = 'Books fest'), (SELECT book_id FROM books WHERE name = 'Katerina'), 1060.00, 2, '2020-12-01 10:23:54+02'),
+((SELECT shop_id FROM shops WHERE name = 'Books fair'), (SELECT book_id FROM books WHERE name = 'Katerina'), 950.00, 3, '2020-12-01 10:23:54+02'),
+((SELECT shop_id FROM shops WHERE name = 'Books fair'), (SELECT book_id FROM books WHERE name = 'Kobzar'), 950.00, 5, '2020-12-01 10:23:54+02'),
+((SELECT shop_id FROM shops WHERE name = 'Books'), (SELECT book_id FROM books WHERE name = 'Kobzar'), 650.00, 3, '2020-12-01 10:23:54+02'),
+((SELECT shop_id FROM shops WHERE name = 'Books world'), (SELECT book_id FROM books WHERE name = 'Kobzar'), 650.00, 10, '2020-12-01 10:23:54+02'),
+((SELECT shop_id FROM shops WHERE name = 'Indian books'), (SELECT book_id FROM books WHERE name = 'Der Kontrabass'), 650.00, 10, '2020-12-01 10:23:54+02');
+
+1. SELECT b.name book, a.name||' '||a.surname author, g.name janr,  b.price, b.circulation, b.public_date, b.pages
+FROM books b
+INNER JOIN ganres g
+ON g.ganres_id = b.ganre
+INNER JOIN authors a
+ON b.author = a.author_id
+WHERE b.pages > 200;
+
+book_sales01=# SELECT b.name book, a.name||' '||a.surname author, g.name janr,  b.price, b.circulation, b.public_date, b.pages
+book_sales01-# FROM books b
+book_sales01-# INNER JOIN ganres g
+book_sales01-# ON g.ganres_id = b.ganre
+book_sales01-# INNER JOIN authors a
+book_sales01-# ON b.author = a.author_id
+book_sales01-# WHERE b.pages > 200;
+         book         |        author         |  janr  | price  | circulation | public_date | pages
+----------------------+-----------------------+--------+--------+-------------+-------------+-------
+ Katerina             | Taras Shevshenko      | novel  | 200.00 |         800 | 1840-02-01  |   250
+ Kobzar               | Taras Shevshenko      | novel  | 480.00 |       10560 | 1840-01-01  |   450
+ Zahar Berkut         | Ivan Franko           | novel  | 640.00 |        8600 | 1883-03-06  |   364
+ Moisey               | Ivan Franko           | novel  | 678.00 |        5600 | 1905-03-01  |   280
+ V putah shaitana     | Mikhaylo Kotsubinckiy | sketch | 169.00 |         370 | 1899-02-25  |   270
+ Tini zabutyh predkiv | Mikhaylo Kotsubinckiy | novel  | 461.00 |        1370 | 1912-08-20  |   214
+ Syni etyudy          | Mikola Hviloviy       | story  | 109.00 |         300 | 2018-02-25  |   210
+ Der Kontrabass       | Patric Dzuskin        | novel  | 560.00 |         200 | 1980-03-01  |   320
+ The flounder         | Patric Dzuskin        | novel  | 490.00 |         560 | 1977-05-03  |   241
+ Dog Years            | Patric Dzuskin        | novel  | 580.00 |         560 | 1963-01-20  |   310
+ Crabwalk             | Patric Dzuskin        | story  | 440.00 |         860 | 2002-01-20  |   223
+ Oedipus on the road  | Anri Bosho            | novel  | 450.00 |         450 | 1990-01-20  |   205
+
+
+2. SELECT s.name shop, c.name city
+FROM shops s
+INNER JOIN city c
+ON s.city = c.city_id
+WHERE c.name = 'Dnipro';
+
+book_sales01=# SELECT s.name shop, c.name city
+book_sales01-# FROM shops s
+book_sales01-# INNER JOIN city c
+book_sales01-# ON s.city = c.city_id
+book_sales01-# WHERE c.name = 'Dnipro';
+    shop     |  city
+-------------+--------
+ Books       | Dnipro
+ Books world | Dnipro
+
+
+ 3. SELECT a.name||' '||a.surname author, c.name city
+FROM authors a
+INNER JOIN city c
+ON a.city = c.city_id
+WHERE a.name like 'M%';
+
+book_sales01=# SELECT a.name||' '||a.surname author, c.name city
+book_sales01-# FROM authors a
+book_sales01-# INNER JOIN city c
+book_sales01-# ON a.city = c.city_id
+book_sales01-# WHERE a.name like 'M%';
+        author         |  city
+-----------------------+--------
+ Mikhaylo Kotsubinckiy | Lviv
+ Mikola Hviloviy       | Lviv
+ Mahmud Gavan          | Mumbai
